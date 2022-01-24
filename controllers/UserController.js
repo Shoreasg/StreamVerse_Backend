@@ -7,8 +7,8 @@ const twitchStrategy = require("passport-twitch.js").Strategy;
 
 
 passport.use(new twitchStrategy({
-    clientID: TWITCH_CLIENT_ID,
-    clientSecret: TWITCH_CLIENT_SECRET,
+    clientID: process.env.TWITCH_CLIENT_ID,
+    clientSecret: process.env.TWITCH_CLIENT_SECRET,
     callbackURL: "auth/twitch/callback",
     scope: "user_read"
   },
@@ -17,5 +17,9 @@ passport.use(new twitchStrategy({
   }
 ));
 
+router.get('/test',(req,res)=>
+{
+    res.send("hello")
+})
 
 module.exports = router
