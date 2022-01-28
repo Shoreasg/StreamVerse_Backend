@@ -14,7 +14,6 @@ passport.use(new twitchStrategy({
 },
   (accessToken, refreshToken, profile, done) => {
     User.findOne({ TwitchId: profile.id }, async (err, user) => {
-      console.log(profile)
       if (err) {
         return done(err);
       } if (user) {
@@ -26,7 +25,7 @@ passport.use(new twitchStrategy({
             userName: profile.display_name,
             TwitchId: profile.id
           }
-          
+
         )
         user.save();
         return done(err, user)
@@ -41,7 +40,11 @@ router.get("/auth/twitch/callback",
   passport.authenticate("twitch.js",
     { failureRedirect: "/" }), (req, res) => {
       req.session.user = req.user
-      res.redirect(`${process.env.FRONTEND_URL}`)
+      res.redirect(`${process.env.FRONTEND_URL}/home`)
     });
+
+router.get('/getuser', (req, res) => { // this is to check the user session.
+  res.send(req.user)
+})
 
 module.exports = router
