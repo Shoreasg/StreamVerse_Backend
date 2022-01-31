@@ -4,7 +4,7 @@ const User = require('../models/user')
 const router = express.Router()
 const twitchStrategy = require("passport-twitch.js").Strategy;
 router.use(express.static("public"))
-
+let token = ""
 
 
 passport.use(new twitchStrategy({
@@ -14,7 +14,7 @@ passport.use(new twitchStrategy({
 },
   (accessToken, refreshToken, profile, done) => {
     User.findOne({ TwitchId: profile.id }, async (err, user) => {
-      console.log(accessToken)
+      token = accessToken
       if (err) {
         return done(err);
       } if (user) {
@@ -35,11 +35,13 @@ passport.use(new twitchStrategy({
   }
 ));
 
-router.get("/auth/twitch", passport.authenticate("twitch.js", { scope: ["user:read:email"] }));
+router.get("/auth/twitch", passport.authenticate("twitch.js", { scope: ["user:read:email", "user:read:follows"] }));
 
 router.get("/auth/twitch/callback",
   passport.authenticate("twitch.js",
     { failureRedirect: "/" }), (req, res) => {
+      req.session.token = token
+      console.log(req.session)
       res.redirect(`${process.env.FRONTEND_URL}/home`)
     });
 
