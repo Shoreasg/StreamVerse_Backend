@@ -4,7 +4,7 @@ const User = require('../models/user')
 const router = express.Router()
 const twitchStrategy = require("passport-twitch.js").Strategy;
 router.use(express.static("public"))
-
+let token = ""
 
 
 passport.use(new twitchStrategy({
@@ -14,6 +14,7 @@ passport.use(new twitchStrategy({
 },
   (accessToken, refreshToken, profile, done) => {
     User.findOne({ TwitchId: profile.id }, async (err, user) => {
+      token = accessToken
       if (err) {
         return done(err);
       } if (user) {
@@ -34,17 +35,39 @@ passport.use(new twitchStrategy({
   }
 ));
 
-router.get("/auth/twitch", passport.authenticate("twitch.js", { scope: ["user:read:email"] }));
+router.get("/auth/twitch", passport.authenticate("twitch.js", { scope: ["user:read:email", "user:read:follows"] }));
 
 router.get("/auth/twitch/callback",
   passport.authenticate("twitch.js",
     { failureRedirect: "/" }), (req, res) => {
-      req.session.user = req.user
+      req.session.token = token
+      console.log(req.session)
       res.redirect(`${process.env.FRONTEND_URL}/home`)
     });
 
 router.get('/getuser', (req, res) => { // this is to check the user session.
+  console.log(req.session)
   res.send(req.user)
 })
 
+router.delete('/logout', (req, res) => { //this will log the user out. Clear the cookies to remove any session
+
+  if (req.session) {
+    console.log(req.session)
+    req.logOut()
+    req.session.destroy((err) => {
+      if (err) {
+        res.send(err)
+      } else {
+        res.clearCookie('connect.sid')
+        console.log(req.session)
+        res.send({ message: "You are successfully logged out!" })
+      }
+    })
+
+  }
+  else {
+    res.send({ message: "You are not logged in!" })
+  }
+})
 module.exports = router
