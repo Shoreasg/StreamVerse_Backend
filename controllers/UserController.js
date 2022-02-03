@@ -13,7 +13,8 @@ passport.use(new twitchStrategy({
   callbackURL: "/auth/twitch/callback",
 },
   (accessToken, refreshToken, profile, done) => {
-    User.findOne({ TwitchId: profile.id }, async (err, user) => {
+    console.log(profile)
+    User.findOne({ twitchId: profile.id }, async (err, user) => {
       token = accessToken
       if (err) {
         return done(err);
@@ -24,7 +25,9 @@ passport.use(new twitchStrategy({
         user = new User(
           {
             userName: profile.display_name,
-            TwitchId: profile.id
+            twitchId: profile.id,
+            description: profile.description,
+            profileImage: profile.profile_image_url
           }
 
         )

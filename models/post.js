@@ -9,15 +9,21 @@ const postSchema = new Schema(
             required: true,
             type: String
         },
-        TwitchId:
+        twitchId:
         {
             required: true,
             type: String
         },
         status:
         {
+            required: true,
             type: String,
-        }
+        },
+        profileImage:
+        {
+            required: true,
+            type: String
+        },
        
     },
     {timestamps: true}

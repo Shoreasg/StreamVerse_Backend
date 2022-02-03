@@ -6,13 +6,34 @@ const userSchema = new Schema(
         userName:
         {
             required: true,
+            unique: true,
             type: String
         },
-        TwitchId:
+        twitchId:
         {
             required: true,
+            unique: true,
             type: String
+        },
+        description:
+        {
+            type: String
+        },
+        profileImage:
+        {
+            type: String
+        },
+        followers:
+        {
+            type: Array
+
+        },
+        followings:
+        {
+            type: Array
         }
+
+
     }
 );
 
