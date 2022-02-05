@@ -25,12 +25,14 @@ const userSchema = new Schema(
         },
         followers:
         {
-            type: Array
+            type: Array,
+            default: []
 
         },
         followings:
         {
-            type: Array
+            type: Array,
+            default: []
         }
 
 

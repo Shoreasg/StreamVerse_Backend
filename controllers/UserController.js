@@ -1,6 +1,7 @@
 const passport = require('passport')
 const express = require('express')
-const User = require('../models/user')
+const User = require('../models/user');
+const { default: axios } = require('axios');
 const router = express.Router()
 const twitchStrategy = require("passport-twitch.js").Strategy;
 router.use(express.static("public"))
@@ -44,13 +45,79 @@ router.get("/auth/twitch/callback",
   passport.authenticate("twitch.js",
     { failureRedirect: "/" }), (req, res) => {
       req.session.token = token
-      console.log(req.session)
       res.redirect(`${process.env.FRONTEND_URL}/home`)
     });
 
 router.get('/getuser', (req, res) => { // this is to check the user session.
-  console.log(req.session)
   res.send(req.user)
+})
+
+router.get('/GetFollowers', (req, res) => {
+  let arrayofFollwers = []
+
+  let GetUserFollowers = async (profileId, pagination) => {
+
+    await axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${profileId}&first=100&after=${pagination}`
+      ,
+      {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${token}`
+        }
+      }).then(async (results) => {
+        results.data.data.map((followresult) => {
+          arrayofFollwers.push(followresult.from_id)
+        })
+
+        if (results.data.pagination.cursor) {
+          await GetUserFollowers(profileId, results.data.pagination.cursor)
+        }
+      })
+
+  }
+     User.findOne({ twitchId: req.user.twitchId}, async (err, user) => {
+      
+      await GetUserFollowers(req.user.twitchId, "")
+      if (arrayofFollwers.length > user.followers.length || arrayofFollwers.length < user.followers.length) {
+        user.followers = arrayofFollwers
+
+      }
+      user.save();
+      res.send({followers: user.followers})
+  })
+})
+
+router.get('/GetFollowing', (req, res) => {
+  let arrayofUserFollowing = []
+  let GetUserFollowing = async (profileId, pagination) => {
+
+    await axios.get(`https://api.twitch.tv/helix/users/follows?from_id=${profileId}&first=100&after=${pagination}`
+      ,
+      {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${token}`
+        }
+      }).then(async (results) => {
+        results.data.data.map((followresult) => {
+          arrayofUserFollowing.push(followresult.to_id)
+        })
+
+        if (results.data.pagination.cursor) {
+          await GetUserFollowing(profileId, results.data.pagination.cursor)
+        }
+      })
+
+  }
+     User.findOne({ twitchId: req.user.twitchId}, async (err, user) => {
+      
+      await GetUserFollowing(req.user.twitchId, "")
+      if (arrayofUserFollowing.length > user.followings.length || arrayofUserFollowing.length < user.followings.length) {
+        user.followings = arrayofUserFollowing
+      }
+      user.save();
+      res.send({followings: user.followings})
+  })
 })
 
 router.delete('/logout', (req, res) => { //this will log the user out. Clear the cookies to remove any session
