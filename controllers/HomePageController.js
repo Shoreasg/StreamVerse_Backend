@@ -9,7 +9,7 @@ router.use(express.static("public"))
 
 
 router.get("/GetFollowedChannels", (req, res) => {
-    axios.get(`https://api.twitch.tv/helix/streams/followed?user_id=${req.user.TwitchId}`,
+    axios.get(`https://api.twitch.tv/helix/streams/followed?user_id=${req.user.twitchId}`,
         {
             headers: {
                 "Client-Id": process.env.TWITCH_CLIENT_ID,
@@ -23,7 +23,7 @@ router.get("/GetFollowedChannels", (req, res) => {
 })
 
 router.get("/GetUserVideos", (req, res) => {
-    axios.get(`https://api.twitch.tv/helix/videos?user_id=${req.user.TwitchId}`,
+    axios.get(`https://api.twitch.tv/helix/videos?user_id=${req.user.twitchId}`,
         {
             headers: {
                 "Client-Id": process.env.TWITCH_CLIENT_ID,
@@ -37,7 +37,7 @@ router.get("/GetUserVideos", (req, res) => {
 })
 
 router.get("/GetUserClips", (req, res) => {
-    axios.get(`https://api.twitch.tv/helix/clips?broadcaster_id=${req.user.TwitchId}`,
+    axios.get(`https://api.twitch.tv/helix/clips?broadcaster_id=${req.user.twitchId}`,
         {
             headers: {
                 "Client-Id": process.env.TWITCH_CLIENT_ID,
