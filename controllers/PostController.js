@@ -36,4 +36,80 @@ router.get("/GetFeed", async( req, res)=>
       }
 })
 
+router.get("/GetPost/:id", async( req, res)=>
+{
+  const postId = req.params.id
+
+    try {
+        const userPost = await Post.findById(postId)
+        res.send(userPost)
+      } catch (err) {
+        res.status(500).json(err);
+      }
+})
+
+router.put("/EditPost/:id", async( req, res)=>
+{
+  const selectedPost = req.params.id
+  console.log(`req.user`,req.user)
+  console.log(`req.session`,req.session)
+  if(req.user.twitchId === req.session.passport.user.twitchId)
+  {
+    try {
+     
+      const userPost = await Post.findByIdAndUpdate(selectedPost,req.body)
+      res.send("Updated Successfully") 
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+  else
+  {
+    res.status(403).json("you can update only your post"); // in case someone use postman to edit
+  }
+    
+})
+
+router.put("/EditPost/:id", async( req, res)=>
+{
+  const selectedPost = req.params.id
+  console.log(`req.user`,req.user)
+  console.log(`req.session`,req.session)
+  if(req.user.twitchId === req.session.passport.user.twitchId)
+  {
+    try {
+     
+      const userPost = await Post.findByIdAndUpdate(selectedPost,req.body)
+      res.send("Updated Successfully") 
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+  else
+  {
+    res.status(403).json("you can update only your post"); // in case someone use postman to edit
+  }
+    
+})
+
+router.delete("/DeletePost/:id", async( req, res)=>
+{
+  const selectedPost = req.params.id
+  if(req.user.twitchId === req.session.passport.user.twitchId)
+  {
+    try {
+     
+     await Post.findByIdAndDelete(selectedPost)
+      res.send("Deleted Successfully") 
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  }
+  else
+  {
+    res.status(403).json("you can delete only your post"); // in case someone use postman to delete
+  }
+    
+})
+
 module.exports = router
