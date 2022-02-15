@@ -22,7 +22,7 @@ router.get("/GetFeed", async (req, res) => {
     const userPost = await Post.find({ twitchId: currentUser.twitchId })
     const followingPost = await Promise.all(
       currentUser.followings.map((userFollowingId) => {
-        return Post.find({ twitchId: userFollowingId })
+        return Post.find({ twitchId: userFollowingId.id })
       })
     )
     let AllPost = userPost.concat(...followingPost)

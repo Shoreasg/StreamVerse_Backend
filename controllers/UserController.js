@@ -2,6 +2,7 @@ const passport = require('passport')
 const express = require('express')
 const User = require('../models/user');
 const { default: axios } = require('axios');
+const req = require('express/lib/request');
 const router = express.Router()
 const twitchStrategy = require("passport-twitch.js").Strategy;
 router.use(express.static("public"))
@@ -14,7 +15,7 @@ passport.use(new twitchStrategy({
   callbackURL: "/auth/twitch/callback",
 },
   (accessToken, refreshToken, profile, done) => {
-    console.log(profile)
+    console.log(accessToken)
     User.findOne({ twitchId: profile.id }, async (err, user) => {
       token = accessToken
       if (err) {
@@ -49,6 +50,7 @@ router.get("/auth/twitch/callback",
     });
 
 router.get('/getuser', (req, res) => { // this is to check the user session.
+
   res.send(req.user)
 })
 
@@ -56,18 +58,31 @@ router.get('/GetFollowers', async (req, res) => {
   let arrayofFollwers = []
   let arrayofUserFollowing = []
   let GetUserFollowing = async (profileId, pagination) => {
-
+    let mapStrings = ""
     await axios.get(`https://api.twitch.tv/helix/users/follows?from_id=${profileId}&first=100&after=${pagination}`
       ,
       {
         headers: {
           "Client-Id": process.env.TWITCH_CLIENT_ID,
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${req.session.token}`
         }
       }).then(async (results) => {
-        results.data.data.map((followresult) => {
-          arrayofUserFollowing.push(followresult.to_id)
+        results.data.data.forEach((followresult) => {
+          mapStrings += `id=${followresult.to_id}&`
         })
+
+        await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
+          , {
+            headers: {
+              "Client-Id": process.env.TWITCH_CLIENT_ID,
+              "Authorization": `Bearer ${req.session.token}`
+            }
+          }).then((result) => {
+            result.data.data.forEach((result) => {
+              arrayofUserFollowing.push(result)
+            })
+          })
+
 
         if (results.data.pagination.cursor) {
           await GetUserFollowing(profileId, results.data.pagination.cursor)
@@ -77,18 +92,30 @@ router.get('/GetFollowers', async (req, res) => {
   }
 
   let GetUserFollowers = async (profileId, pagination) => {
-
+    let mapStrings = ""
     await axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${profileId}&first=100&after=${pagination}`
       ,
       {
         headers: {
           "Client-Id": process.env.TWITCH_CLIENT_ID,
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${req.session.token}`
         }
       }).then(async (results) => {
-        results.data.data.map((followresult) => {
-          arrayofFollwers.push(followresult.from_id)
+        results.data.data.forEach((followresult) => {
+          mapStrings += `id=${followresult.from_id}&`
         })
+
+        await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
+          , {
+            headers: {
+              "Client-Id": process.env.TWITCH_CLIENT_ID,
+              "Authorization": `Bearer ${req.session.token}`
+            }
+          }).then((result) => {
+            result.data.data.forEach((result) => {
+              arrayofFollwers.push(result)
+            })
+          })
 
         if (results.data.pagination.cursor) {
           await GetUserFollowers(profileId, results.data.pagination.cursor)
@@ -108,15 +135,32 @@ router.get('/GetFollowers', async (req, res) => {
       if (arrayofUserFollowing.length > user.followings.length || arrayofUserFollowing.length < user.followings.length) {
         user.followings = arrayofUserFollowing
       }
-      
+
       user.save();
       res.send({ followers: user.followers, followings: user.followings })
     })
   } catch (error) {
-    res.status(500).json(error);
+    res.send(error);
   }
 
 })
+
+router.get('/getuser/:id', async (req, res) => {
+  try {
+    await axios.get(`https://api.twitch.tv/helix/users?${req.params.id}`
+      , {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${req.session.token}`
+        }
+      }).then((result) => {
+        res.send(result.data.data)
+      })
+  } catch (err) {
+    res.status(500).json(err);
+  }
+})
+
 
 router.delete('/logout', async (req, res) => { //this will log the user out. Clear the cookies to remove any session
 
