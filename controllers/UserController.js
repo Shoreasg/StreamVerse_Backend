@@ -29,7 +29,9 @@ passport.use(new twitchStrategy({
             userName: profile.display_name,
             twitchId: profile.id,
             description: profile.description,
-            profileImage: profile.profile_image_url
+            profileImage: profile.profile_image_url,
+            followers: [],
+            following: []
           }
 
         )
@@ -145,9 +147,92 @@ router.get('/GetFollowers', async (req, res) => {
 
 })
 
+
+router.get('/GetFollowers/:id', async (req, res) => {
+  let arrayofFollwers = []
+  let arrayofUserFollowing = []
+  let GetUserFollowing = async (profileId, pagination) => {
+    let mapStrings = ""
+    await axios.get(`https://api.twitch.tv/helix/users/follows?from_id=${profileId}&first=100&after=${pagination}`
+      ,
+      {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${req.session.token}`
+        }
+      }).then(async (results) => {
+        results.data.data.forEach((followresult) => {
+          mapStrings += `id=${followresult.to_id}&`
+        })
+
+        await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
+          , {
+            headers: {
+              "Client-Id": process.env.TWITCH_CLIENT_ID,
+              "Authorization": `Bearer ${req.session.token}`
+            }
+          }).then((result) => {
+            result.data.data.forEach((result) => {
+              arrayofUserFollowing.push(result)
+            })
+          })
+
+
+        if (results.data.pagination.cursor) {
+          await GetUserFollowing(profileId, results.data.pagination.cursor)
+        }
+      })
+
+  }
+
+  let GetUserFollowers = async (profileId, pagination) => {
+    let mapStrings = ""
+    await axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${profileId}&first=100&after=${pagination}`
+      ,
+      {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${req.session.token}`
+        }
+      }).then(async (results) => {
+        results.data.data.forEach((followresult) => {
+          mapStrings += `id=${followresult.from_id}&`
+        })
+
+        await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
+          , {
+            headers: {
+              "Client-Id": process.env.TWITCH_CLIENT_ID,
+              "Authorization": `Bearer ${req.session.token}`
+            }
+          }).then((result) => {
+            result.data.data.forEach((result) => {
+              arrayofFollwers.push(result)
+            })
+          })
+
+        if (results.data.pagination.cursor) {
+          await GetUserFollowers(profileId, results.data.pagination.cursor)
+        }
+      })
+
+  }
+  try {
+      await GetUserFollowers(req.params.id, "")
+      await GetUserFollowing(req.params.id, "")
+      
+      res.send({ followers: arrayofFollwers, followings: arrayofUserFollowing })
+ 
+  } catch (error) {
+    res.send(error);
+  }
+
+})
+
+
 router.get('/getuser/:id', async (req, res) => {
   try {
-    await axios.get(`https://api.twitch.tv/helix/users?${req.params.id}`
+    await axios.get(`https://api.twitch.tv/helix/users?login=${req.params.id}`
       , {
         headers: {
           "Client-Id": process.env.TWITCH_CLIENT_ID,
