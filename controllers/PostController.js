@@ -6,7 +6,7 @@ router.use(express.static("public"))
 
 
 
-router.post("/postStatus", async (req, res) => {
+router.post("/postStatus", async (req, res) => { //Create post
   const newPost = new Post(req.body);
   try {
     const savedPost = await newPost.save();
@@ -16,13 +16,13 @@ router.post("/postStatus", async (req, res) => {
   }
 })
 
-router.get("/GetFeed", async (req, res) => {
+router.get("/GetFeed", async (req, res) => { // Get the user feed with the user that he is following
   try {
     const currentUser = await User.findOne({ twitchId: req.user.twitchId })
     const userPost = await Post.find({ twitchId: currentUser.twitchId })
     const followingPost = await Promise.all(
       currentUser.followings.map((userFollowingId) => {
-        return Post.find({ twitchId: userFollowingId })
+        return Post.find({ twitchId: userFollowingId.id })
       })
     )
     let AllPost = userPost.concat(...followingPost)
@@ -33,9 +33,10 @@ router.get("/GetFeed", async (req, res) => {
   }
 })
 
-router.get("/GetUserFeed", async (req, res) => {
+
+router.get("/GetUserFeed/:id", async (req, res) => {
   try {
-    const userPost = await Post.find({ twitchId: req.user.twitchId })
+    const userPost = await Post.find({ twitchId: req.params.id })
     userPost.sort((a, b) => { return b.createdAt - a.createdAt })
     res.send(userPost)
   } catch (err) {
