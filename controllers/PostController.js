@@ -33,15 +33,6 @@ router.get("/GetFeed", async (req, res) => { // Get the user feed with the user 
   }
 })
 
-router.get("/GetUserFeed", async (req, res) => { // Get the login user feed for his own profile
-  try {
-    const userPost = await Post.find({ twitchId: req.user.twitchId })
-    userPost.sort((a, b) => { return b.createdAt - a.createdAt })
-    res.send(userPost)
-  } catch (err) {
-    res.status(500).json(err);
-  }
-})
 
 router.get("/GetUserFeed/:id", async (req, res) => {
   try {
