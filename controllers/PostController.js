@@ -33,12 +33,22 @@ router.get("/GetFeed", async (req, res) => { // Get the user feed with the user 
   }
 })
 
-
 router.get("/GetUserFeed/:id", async (req, res) => {
   try {
     const userPost = await Post.find({ twitchId: req.params.id })
     userPost.sort((a, b) => { return b.createdAt - a.createdAt })
     res.send(userPost)
+  } catch (err) {
+    res.status(500).json(err);
+  }
+})
+
+
+router.get("/GetAllFeed", async (req, res) => {
+  try {
+    const AllPost = await Post.find({})
+    AllPost.sort((a, b) => { return b.createdAt - a.createdAt })
+    res.send(AllPost)
   } catch (err) {
     res.status(500).json(err);
   }
@@ -95,19 +105,14 @@ router.put("/EditPost/:id", async (req, res) => {
 
 router.delete("/DeletePost/:id", async (req, res) => {
   const selectedPost = req.params.id
-  if (req.user.twitchId === req.session.passport.user.twitchId) {
-    try {
 
-      await Post.findByIdAndDelete(selectedPost)
-      res.send("Deleted Successfully")
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  }
-  else {
-    res.status(403).json("you can delete only your post"); // in case someone use postman to delete
-  }
+  try {
 
+    await Post.findByIdAndDelete(selectedPost)
+    res.send("Deleted Successfully")
+  } catch (err) {
+    res.status(500).json(err);
+  }
 })
 
 module.exports = router
