@@ -1,6 +1,7 @@
 const passport = require('passport')
 const express = require('express')
 const User = require('../models/user');
+const Post = require('../models/post')
 const { default: axios } = require('axios');
 const req = require('express/lib/request');
 const router = express.Router()
@@ -56,96 +57,96 @@ router.get('/getuser', (req, res) => { // this is to check the user session.
   res.send(req.user)
 })
 
-// router.get('/GetFollowers', async (req, res) => { see if need to delete
-//   let arrayofFollwers = []
-//   let arrayofUserFollowing = []
-//   let GetUserFollowing = async (profileId, pagination) => {
-//     let mapStrings = ""
-//     await axios.get(`https://api.twitch.tv/helix/users/follows?from_id=${profileId}&first=100&after=${pagination}`
-//       ,
-//       {
-//         headers: {
-//           "Client-Id": process.env.TWITCH_CLIENT_ID,
-//           "Authorization": `Bearer ${req.session.token}`
-//         }
-//       }).then(async (results) => {
-//         results.data.data.forEach((followresult) => {
-//           mapStrings += `id=${followresult.to_id}&`
-//         })
+router.get('/GetFollowers', async (req, res) => { 
+  let arrayofFollwers = []
+  let arrayofUserFollowing = []
+  let GetUserFollowing = async (profileId, pagination) => {
+    let mapStrings = ""
+    await axios.get(`https://api.twitch.tv/helix/users/follows?from_id=${profileId}&first=100&after=${pagination}`
+      ,
+      {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${req.session.token}`
+        }
+      }).then(async (results) => {
+        results.data.data.forEach((followresult) => {
+          mapStrings += `id=${followresult.to_id}&`
+        })
 
-//         await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
-//           , {
-//             headers: {
-//               "Client-Id": process.env.TWITCH_CLIENT_ID,
-//               "Authorization": `Bearer ${req.session.token}`
-//             }
-//           }).then((result) => {
-//             result.data.data.forEach((result) => {
-//               arrayofUserFollowing.push(result)
-//             })
-//           })
+        await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
+          , {
+            headers: {
+              "Client-Id": process.env.TWITCH_CLIENT_ID,
+              "Authorization": `Bearer ${req.session.token}`
+            }
+          }).then((result) => {
+            result.data.data.forEach((result) => {
+              arrayofUserFollowing.push(result)
+            })
+          })
 
 
-//         if (results.data.pagination.cursor) {
-//           await GetUserFollowing(profileId, results.data.pagination.cursor)
-//         }
-//       })
+        if (results.data.pagination.cursor) {
+          await GetUserFollowing(profileId, results.data.pagination.cursor)
+        }
+      })
 
-//   }
+  }
 
-//   let GetUserFollowers = async (profileId, pagination) => {
-//     let mapStrings = ""
-//     await axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${profileId}&first=100&after=${pagination}`
-//       ,
-//       {
-//         headers: {
-//           "Client-Id": process.env.TWITCH_CLIENT_ID,
-//           "Authorization": `Bearer ${req.session.token}`
-//         }
-//       }).then(async (results) => {
-//         results.data.data.forEach((followresult) => {
-//           mapStrings += `id=${followresult.from_id}&`
-//         })
+  let GetUserFollowers = async (profileId, pagination) => {
+    let mapStrings = ""
+    await axios.get(`https://api.twitch.tv/helix/users/follows?to_id=${profileId}&first=100&after=${pagination}`
+      ,
+      {
+        headers: {
+          "Client-Id": process.env.TWITCH_CLIENT_ID,
+          "Authorization": `Bearer ${req.session.token}`
+        }
+      }).then(async (results) => {
+        results.data.data.forEach((followresult) => {
+          mapStrings += `id=${followresult.from_id}&`
+        })
 
-//         await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
-//           , {
-//             headers: {
-//               "Client-Id": process.env.TWITCH_CLIENT_ID,
-//               "Authorization": `Bearer ${req.session.token}`
-//             }
-//           }).then((result) => {
-//             result.data.data.forEach((result) => {
-//               arrayofFollwers.push(result)
-//             })
-//           })
+        await axios.get(`https://api.twitch.tv/helix/users?${mapStrings}`
+          , {
+            headers: {
+              "Client-Id": process.env.TWITCH_CLIENT_ID,
+              "Authorization": `Bearer ${req.session.token}`
+            }
+          }).then((result) => {
+            result.data.data.forEach((result) => {
+              arrayofFollwers.push(result)
+            })
+          })
 
-//         if (results.data.pagination.cursor) {
-//           await GetUserFollowers(profileId, results.data.pagination.cursor)
-//         }
-//       })
+        if (results.data.pagination.cursor) {
+          await GetUserFollowers(profileId, results.data.pagination.cursor)
+        }
+      })
 
-//   }
-//   try {
-//     User.findOne({ twitchId: req.user.twitchId }, async (err, user) => {
+  }
+  try {
+    User.findOne({ twitchId: req.user.twitchId }, async (err, user) => {
 
-//       await GetUserFollowers(req.user.twitchId, "")
-//       await GetUserFollowing(req.user.twitchId, "")
-//       if (arrayofFollwers.length > user.followers.length || arrayofFollwers.length < user.followers.length) {
-//         user.followers = arrayofFollwers
+      await GetUserFollowers(req.user.twitchId, "")
+      await GetUserFollowing(req.user.twitchId, "")
+      if (arrayofFollwers.length > user.followers.length || arrayofFollwers.length < user.followers.length) {
+        user.followers = arrayofFollwers
 
-//       }
-//       if (arrayofUserFollowing.length > user.followings.length || arrayofUserFollowing.length < user.followings.length) {
-//         user.followings = arrayofUserFollowing
-//       }
+      }
+      if (arrayofUserFollowing.length > user.followings.length || arrayofUserFollowing.length < user.followings.length) {
+        user.followings = arrayofUserFollowing
+      }
 
-//       user.save();
-//       res.send({ followers: user.followers, followings: user.followings })
-//     })
-//   } catch (error) {
-//     res.send(error);
-//   }
+      user.save();
+      res.send({ followers: user.followers, followings: user.followings })
+    })
+  } catch (error) {
+    res.send(error);
+  }
 
-// })
+})
 
 
 router.get('/GetFollowers/:id', async (req, res) => {
@@ -248,6 +249,40 @@ router.get('/getuser/:id', async (req, res) => {
   }
 })
 
+
+router.get('/AllUser', async (req, res) => {
+  try {
+    const AllUser = await User.find({})
+    AllUser.sort((a, b) => { return b.createdAt - a.createdAt })
+    res.send(AllUser)
+  } catch (err) {
+    res.status(500).json(err);
+  }
+})
+
+router.get('/AllUser/:id', async (req, res) => {
+  const UserId = req.params.id
+
+  try {
+    const UserInfo = await User.findOne({twitchId: UserId})
+    res.send(UserInfo)
+  } catch (err) {
+    res.status(500).json(err);
+  }
+})
+
+router.delete("/DeleteUser/:id", async (req, res) => {
+  const SelectedUser = req.params.id
+
+  try {
+
+    await User.findOneAndDelete({twitchId: SelectedUser})
+    await Post.deleteMany({twitchId: SelectedUser})
+    res.send("Deleted Successfully")
+  } catch (err) {
+    res.status(500).json(err);
+  }
+})
 
 router.delete('/logout', async (req, res) => { //this will log the user out. Clear the cookies to remove any session
 
