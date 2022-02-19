@@ -2,8 +2,8 @@ const passport = require('passport')
 const express = require('express')
 const User = require('../models/user');
 const Post = require('../models/post')
+const Sessions = require('../models/session')
 const { default: axios } = require('axios');
-const req = require('express/lib/request');
 const router = express.Router()
 const twitchStrategy = require("passport-twitch.js").Strategy;
 router.use(express.static("public"))
@@ -52,12 +52,15 @@ router.get("/auth/twitch/callback",
       res.redirect(`${process.env.FRONTEND_URL}/home`)
     });
 
-router.get('/getuser', (req, res) => { // this is to check the user session.
-
+router.get('/getuser',async (req, res) => { // this is to check the user session.
+  if(req.user)
+  {
+    await Sessions.findByIdAndUpdate(req.sessionID,{twitchId: req.user.twitchId})
+  }
   res.send(req.user)
 })
 
-router.get('/GetFollowers', async (req, res) => { 
+router.get('/GetFollowers', async (req, res) => {
   let arrayofFollwers = []
   let arrayofUserFollowing = []
   let GetUserFollowing = async (profileId, pagination) => {
@@ -264,7 +267,7 @@ router.get('/AllUser/:id', async (req, res) => {
   const UserId = req.params.id
 
   try {
-    const UserInfo = await User.findOne({twitchId: UserId})
+    const UserInfo = await User.findOne({ twitchId: UserId })
     res.send(UserInfo)
   } catch (err) {
     res.status(500).json(err);
@@ -276,8 +279,23 @@ router.delete("/DeleteUser/:id", async (req, res) => {
 
   try {
 
-    await User.findOneAndDelete({twitchId: SelectedUser})
-    await Post.deleteMany({twitchId: SelectedUser})
+    await User.findOneAndDelete({ twitchId: SelectedUser })
+    await Post.deleteMany({ twitchId: SelectedUser })
+    await Sessions.deleteMany({twitchId: SelectedUser})
+    res.send("Deleted Successfully")
+  } catch (err) {
+    res.status(500).json(err);
+  }
+})
+
+router.delete("/DeleteOwnUser/:id", async (req, res) => {
+  const SelectedUser = req.params.id
+
+  try {
+
+    await User.findOneAndDelete({ twitchId: SelectedUser })
+    await Post.deleteMany({ twitchId: SelectedUser })
+    await Sessions.deleteMany({twitchId: SelectedUser})
     res.send("Deleted Successfully")
   } catch (err) {
     res.status(500).json(err);
