@@ -7,6 +7,7 @@ const MongoStore = require('connect-mongo');
 const userController = require('./controllers/UserController')
 const HomePageController = require('./controllers/HomePageController')
 const PostController = require('./controllers/PostController')
+const CommentController = require('./controllers/CommentController')
 const DATABASE = process.env.DATABASE;
 const MONGO_USER = process.env.MONGO_USER;
 const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
@@ -38,5 +39,6 @@ passport.deserializeUser(function (u, d) {
 app.use(userController)
 app.use(HomePageController)
 app.use(PostController)
+app.use(CommentController)
 
 module.exports = app
