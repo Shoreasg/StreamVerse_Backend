@@ -1,4 +1,5 @@
 const express = require('express')
+const Comment = require('../models/comment')
 const router = express.Router()
 const Post = require('../models/post')
 const User = require('../models/user')
@@ -19,10 +20,10 @@ router.post("/postStatus", async (req, res) => { //Create post
 router.get("/GetFeed", async (req, res) => { // Get the user feed with the user that he is following
   try {
     const currentUser = await User.findOne({ twitchId: req.user.twitchId })
-    const userPost = await Post.find({ twitchId: currentUser.twitchId })
+    const userPost = await Post.find({ twitchId: currentUser.twitchId }).populate('comment')
     const followingPost = await Promise.all(
       currentUser.followings.map((userFollowingId) => {
-        return Post.find({ twitchId: userFollowingId.id })
+        return Post.find({ twitchId: userFollowingId.id }).populate('comment')
       })
     )
     let AllPost = userPost.concat(...followingPost)
@@ -35,7 +36,7 @@ router.get("/GetFeed", async (req, res) => { // Get the user feed with the user 
 
 router.get("/GetUserFeed/:id", async (req, res) => {
   try {
-    const userPost = await Post.find({ twitchId: req.params.id })
+    const userPost = await Post.find({ twitchId: req.params.id }).populate('comment')
     userPost.sort((a, b) => { return b.createdAt - a.createdAt })
     res.send(userPost)
   } catch (err) {
@@ -67,12 +68,12 @@ router.get("/GetPost/:id", async (req, res) => {
 
 router.put("/EditPost/:id", async (req, res) => {
   const selectedPost = req.params.id
-  console.log(`req.user`, req.user)
-  console.log(`req.session`, req.session)
   if (req.user.twitchId === req.session.passport.user.twitchId) {
     try {
 
       const userPost = await Post.findByIdAndUpdate(selectedPost, req.body)
+      userPost.editedOn = userPost.updatedAt
+      userPost.save()
       res.send("Updated Successfully")
     } catch (err) {
       res.status(500).json(err);
@@ -109,6 +110,7 @@ router.delete("/DeletePost/:id", async (req, res) => {
   try {
 
     await Post.findByIdAndDelete(selectedPost)
+    await Comment.deleteMany({statusID: selectedPost})
     res.send("Deleted Successfully")
   } catch (err) {
     res.status(500).json(err);
