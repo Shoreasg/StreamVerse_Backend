@@ -85,7 +85,7 @@ router.get('/GetFollowers', async (req, res) => {
             }
           }).then((result) => {
             result.data.data.forEach((result) => {
-              arrayofUserFollowing.push(result)
+              arrayofUserFollowing.push(result.id)
             })
           })
 
@@ -119,7 +119,7 @@ router.get('/GetFollowers', async (req, res) => {
             }
           }).then((result) => {
             result.data.data.forEach((result) => {
-              arrayofFollwers.push(result)
+              arrayofFollwers.push(result.id)
             })
           })
 

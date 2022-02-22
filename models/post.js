@@ -31,7 +31,21 @@ const postSchema = new Schema(
         editedOn:
         {
             type: Date
+        },
+        kappa:
+        {
+            type:[]
+        },
+        lul:
+        {
+            type:[]
+        },
+        good:
+        {
+            type:[]
         }
+
+
 
     },
     { timestamps: true }
