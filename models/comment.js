@@ -28,7 +28,20 @@ const commentSchema = new Schema(
         {
             required: true,
             type: String
+        },
+        kappa:
+        {
+            type:[]
+        },
+        lul:
+        {
+            type:[]
+        },
+        good:
+        {
+            type:[]
         }
+
        
     },
     {timestamps: true}

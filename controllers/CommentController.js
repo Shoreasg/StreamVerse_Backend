@@ -55,6 +55,56 @@ router.put("/EditComment/:id", async (req, res) => {
     }
   
   })
+  router.put("/KAPPAComment/:id", async (req, res) => { // KAPPA A POST
+    try {
+  
+      const selectedComment = await Comment.findById(req.params.id)
+      if (!selectedComment.kappa.includes(req.body.twitchId)) {
+        await selectedComment.updateOne({ $push: { kappa: req.body.twitchId } })
+        res.status(200).json("KAPPA!")
+      }
+      else {
+        await selectedComment.updateOne({ $pull: { kappa: req.body.twitchId } })
+        res.status(200).json("NO KAPPA?")
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  })
+  
+  router.put("/LULComment/:id", async (req, res) => { // LUL A POST
+    try {
+  
+      const selectedComment = await Comment.findById(req.params.id)
+      if (!selectedComment.lul.includes(req.body.twitchId)) {
+        await selectedComment.updateOne({ $push: { lul: req.body.twitchId } })
+        res.status(200).json("LUL!")
+      }
+      else {
+        await selectedComment.updateOne({ $pull: { lul: req.body.twitchId } })
+        res.status(200).json("NO LUL?")
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  })
+  
+  router.put("/GOODComment/:id", async (req, res) => { //LOOKS GOOD
+    try {
+  
+      const selectedComment = await Comment.findById(req.params.id)
+      if (!selectedComment.good.includes(req.body.twitchId)) {
+        await selectedComment.updateOne({ $push: { good: req.body.twitchId } })
+        res.status(200).json("LOOKSGOOD!")
+      }
+      else {
+        await selectedComment.updateOne({ $pull: { good: req.body.twitchId } })
+        res.status(200).json("NO GOOD?")
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  })
 
   router.delete("/DeleteComment/:id", async (req, res) => {
     const selectedComment = req.params.id
