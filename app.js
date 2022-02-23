@@ -16,7 +16,7 @@ const MONGO_URL = `mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_BASE_UR
 const app = express();
 app.use(express.json())
 app.use(cors({ origin: process.env.FRONTEND_URL, methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD', 'DELETE', 'PATCH'], credentials: true }));
-
+app.enable('trust proxy')
 
 
 
@@ -24,6 +24,8 @@ app.use(session({
   secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
+  proxy : true ,
+  cookie: {sameSite: "none", secure: true},
   store: MongoStore.create({ mongoUrl: MONGO_URL })
 }));
 
