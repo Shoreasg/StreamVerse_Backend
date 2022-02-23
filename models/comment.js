@@ -29,6 +29,10 @@ const commentSchema = new Schema(
             required: true,
             type: String
         },
+        editedOn:
+        {
+            type: Date
+        },
         kappa:
         {
             type:[]

@@ -44,7 +44,9 @@ router.put("/EditComment/:id", async (req, res) => {
     if (req.user.twitchId === req.session.passport.user.twitchId) {
       try {
   
-        await Comment.findByIdAndUpdate(selectedComment, req.body)
+       const userComment = await Comment.findByIdAndUpdate(selectedComment, req.body)
+       userComment.editedOn = userComment.updatedAt
+       userComment.save()
         res.send("Updated Successfully")
       } catch (err) {
         res.status(500).json(err);
