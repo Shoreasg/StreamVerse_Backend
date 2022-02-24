@@ -27,7 +27,6 @@ app.use(session({
   proxy : true ,
   cookie: {sameSite: "none", secure: true},
   store: MongoStore.create({ mongoUrl: MONGO_URL }),
-  expires: 1800
 }));
 
 app.use(passport.initialize());
