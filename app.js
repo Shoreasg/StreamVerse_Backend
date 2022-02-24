@@ -25,8 +25,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   proxy : true ,
-  cookie: {sameSite: "none", secure: true, maxAge: 900000},
-  store: MongoStore.create({ mongoUrl: MONGO_URL, ttl: 1800 }),
+  cookie: {sameSite: "none", secure: true, maxAge: 1800000},
+  store: MongoStore.create({ mongoUrl: MONGO_URL}),
 }));
 
 app.use(passport.initialize());
