@@ -7,7 +7,7 @@
 
 
 ## Repositories
-[Front Repo](https://github.com/Shoreasg/StreamVerse_FrontEnd)
+[Frontend Repo](https://github.com/Shoreasg/StreamVerse_FrontEnd)
 
 [Backend Repo](https://github.com/Shoreasg/StreamVerse_Backend)
 
@@ -60,13 +60,13 @@ There are many streamers in in the world, however there is no platform that acts
 # Technologies used
 
 
-## Front-End
+## FrontEnd
 - [Tailwindcss](https://tailwindcss.com/docs/guides/create-react-app)
 - [React](https://reactjs.org/)
 - [Ant Design](https://ant.design/)
 
 
-## Back-End
+## BackEnd
 - [Node.js](https://nodejs.org/en/)
 - [Express](http://expressjs.com/)
 - [Mongoose](https://mongoosejs.com/)
